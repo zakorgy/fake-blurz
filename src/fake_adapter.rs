@@ -9,22 +9,22 @@ use core::ops::Deref;
 pub struct FakeBluetoothAdapter {
     object_path: Arc<Mutex<String>>,
     is_present: Arc<Mutex<bool>>,
-    is_powered: bool,
-    can_start_discovery: bool,
-    can_stop_discovery: bool,
-    devices: Vec<Arc<String>>,
-    addatas: Vec<String>,
-    address: String,
-    name: String,
-    alias: String,
-    class: u32,
-    is_discoverable: bool,
-    is_pairable: bool,
-    pairable_timeout: u32,
-    discoverable_timeout: u32,
-    is_discovering: bool,
-    uuids: Vec<String>,
-    modalias: String,
+    is_powered: Arc<Mutex<bool>>,
+    can_start_discovery: Arc<Mutex<bool>>,
+    can_stop_discovery: Arc<Mutex<bool>>,
+    devices: Arc<Mutex<Vec<String>>>,
+    addatas: Arc<Mutex<Vec<String>>>,
+    address: Arc<Mutex<String>>,
+    name: Arc<Mutex<String>>,
+    alias: Arc<Mutex<String>>,
+    class: Arc<Mutex<u32>>,
+    is_discoverable: Arc<Mutex<bool>>,
+    is_pairable: Arc<Mutex<bool>>,
+    pairable_timeout: Arc<Mutex<u32>>,
+    discoverable_timeout: Arc<Mutex<u32>>,
+    is_discovering: Arc<Mutex<bool>>,
+    uuids: Arc<Mutex<Vec<String>>>,
+    modalias: Arc<Mutex<String>>,
 }
 
 impl FakeBluetoothAdapter {
@@ -33,7 +33,7 @@ impl FakeBluetoothAdapter {
                is_powered: bool,
                can_start_discovery: bool,
                can_stop_discovery: bool,
-               devices: Vec<Arc<String>>,
+               devices: Vec<String>,
                addatas: Vec<String>,
                address: String,
                name: String,
@@ -50,22 +50,22 @@ impl FakeBluetoothAdapter {
         FakeBluetoothAdapter {
             object_path: Arc::new(Mutex::new(object_path)),
             is_present: Arc::new(Mutex::new(is_present)),
-            is_powered: is_powered,
-            can_start_discovery: can_start_discovery,
-            can_stop_discovery: can_stop_discovery,
-            devices: devices,
-            addatas: addatas,
-            address: address,
-            name: name,
-            alias: alias,
-            class: class,
-            is_discoverable: is_discoverable,
-            is_pairable: is_pairable,
-            pairable_timeout: pairable_timeout,
-            discoverable_timeout: discoverable_timeout,
-            is_discovering: is_discovering,
-            uuids: uuids,
-            modalias: modalias,
+            is_powered: Arc::new(Mutex::new(is_powered)),
+            can_start_discovery: Arc::new(Mutex::new(can_start_discovery)),
+            can_stop_discovery: Arc::new(Mutex::new(can_stop_discovery)),
+            devices: Arc::new(Mutex::new(devices)),
+            addatas: Arc::new(Mutex::new(addatas)),
+            address: Arc::new(Mutex::new(address)),
+            name: Arc::new(Mutex::new(name)),
+            alias: Arc::new(Mutex::new(alias)),
+            class: Arc::new(Mutex::new(class)),
+            is_discoverable: Arc::new(Mutex::new(is_discoverable)),
+            is_pairable: Arc::new(Mutex::new(is_pairable)),
+            pairable_timeout: Arc::new(Mutex::new(pairable_timeout)),
+            discoverable_timeout: Arc::new(Mutex::new(discoverable_timeout)),
+            is_discovering: Arc::new(Mutex::new(is_discovering)),
+            uuids: Arc::new(Mutex::new(uuids)),
+            modalias: Arc::new(Mutex::new(modalias)),
         }
     }
 
@@ -73,22 +73,22 @@ impl FakeBluetoothAdapter {
         FakeBluetoothAdapter {
             object_path: Arc::new(Mutex::new(String::new())),
             is_present: Arc::new(Mutex::new(false)),
-            is_powered: false,
-            can_start_discovery: false,
-            can_stop_discovery: false,
-            devices: vec![],
-            addatas: vec![],
-            address: String::new(),
-            name: String::new(),
-            alias: String::new(),
-            class: 0,
-            is_discoverable: false,
-            is_pairable: false,
-            pairable_timeout: 0,
-            discoverable_timeout: 0,
-            is_discovering: false,
-            uuids: vec![],
-            modalias: String::new(),
+            is_powered: Arc::new(Mutex::new(false)),
+            can_start_discovery: Arc::new(Mutex::new(false)),
+            can_stop_discovery: Arc::new(Mutex::new(false)),
+            devices: Arc::new(Mutex::new(vec![])),
+            addatas: Arc::new(Mutex::new(vec![])),
+            address: Arc::new(Mutex::new(String::new())),
+            name: Arc::new(Mutex::new(String::new())),
+            alias: Arc::new(Mutex::new(String::new())),
+            class: Arc::new(Mutex::new(0)),
+            is_discoverable: Arc::new(Mutex::new(false)),
+            is_pairable: Arc::new(Mutex::new(false)),
+            pairable_timeout: Arc::new(Mutex::new(0)),
+            discoverable_timeout: Arc::new(Mutex::new(0)),
+            is_discovering: Arc::new(Mutex::new(false)),
+            uuids: Arc::new(Mutex::new(vec![])),
+            modalias: Arc::new(Mutex::new(String::new())),
         }
     }
 
@@ -119,33 +119,57 @@ impl FakeBluetoothAdapter {
 
     pub fn set_present(&mut self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.is_present.clone();
-        ///TODO remove unwrap, if possible
+        //TODO remove unwrap, if possible
         let mut is_present = cloned.lock().unwrap();
         Ok(*is_present = value)
     }
 
     pub fn is_powered(&self) -> Result<bool, Box<Error>> {
-        Ok(self.is_powered)
+        let cloned = self.is_powered.clone();
+        let is_powered = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(is_powered)
     }
 
     pub fn set_powered(&mut self, value: bool) -> Result<(), Box<Error>> {
-        Ok(self.is_powered = value)
+        let cloned = self.is_powered.clone();
+        //TODO remove unwrap, if possible
+        let mut is_powered = cloned.lock().unwrap();
+        Ok(*is_powered = value)
     }
 
     pub fn get_can_start_discovery(&self) -> Result<bool, Box<Error>> {
-        Ok(self.can_start_discovery)
+        let cloned = self.can_start_discovery.clone();
+        let can_start_discovery = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(can_start_discovery)
     }
 
     pub fn set_can_start_discovery(&mut self, value: bool) -> Result<(), Box<Error>> {
-        Ok(self.can_start_discovery = value)
+        let cloned = self.can_start_discovery.clone();
+        //TODO remove unwrap, if possible
+        let mut can_start_discovery = cloned.lock().unwrap();
+        Ok(*can_start_discovery = value)
     }
 
     pub fn get_can_stop_siscovery(&self) -> Result<bool, Box<Error>> {
-        Ok(self.can_stop_discovery)
+        let cloned = self.can_stop_discovery.clone();
+        let can_stop_discovery = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(can_stop_discovery)
     }
 
     pub fn set_can_stop_discovery(&mut self, value: bool) -> Result<(), Box<Error>> {
-        Ok(self.can_stop_discovery = value)
+        let cloned = self.can_stop_discovery.clone();
+        //TODO remove unwrap, if possible
+        let mut can_stop_discovery = cloned.lock().unwrap();
+        Ok(*can_stop_discovery = value)
     }
 
     /*pub fn get_device_list(&self) -> Result<Vec<String>, Box<Error>> {
@@ -154,9 +178,9 @@ impl FakeBluetoothAdapter {
             names.push(device.get_name().unwrap());
         }
         Ok(names)
-    }*/
+    }
 
-    pub fn get_devices(&self) -> Result<Vec<Arc<String>>, Box<Error>> {
+    pub fn get_devices(&self) -> Result<Vec<String>, Box<Error>> {
         Ok(self.devices.clone())
     }
 
@@ -173,24 +197,37 @@ impl FakeBluetoothAdapter {
             return Err(Box::from("No device found."))
         }
         Ok(self.devices[0].clone())
-    }
+    }*/
 
     pub fn get_addatas(&self) -> Result<Vec<String>, Box<Error>> {
-        Ok(self.addatas.clone())
+        let cloned = self.addatas.clone();
+        let addatas = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(addatas)
     }
 
-    pub fn set_addatas(&mut self, addatas: Vec<String>) -> Result<(), Box<Error>> {
-        Ok(self.addatas = addatas)
+    pub fn set_addatas(&mut self, value: Vec<String>) -> Result<(), Box<Error>> {
+        let cloned = self.addatas.clone();
+        //TODO remove unwrap, if possible
+        let mut addatas = cloned.lock().unwrap();
+        Ok(*addatas = value)
     }
 
     pub fn get_first_addata(&self) -> Result<String, Box<Error>> {
-        if self.addatas.is_empty() {
+        let cloned = self.addatas.clone();
+        let addatas = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        if addatas.is_empty() {
             return Err(Box::from("No addata found."))
         }
-        Ok(self.addatas[0].clone())
+        Ok(addatas[0].clone())
     }
 
-    pub fn get_address(&self) -> Result<String, Box<Error>> {
+    /*pub fn get_address(&self) -> Result<String, Box<Error>> {
         Ok(self.address.clone())
     }
 
@@ -311,5 +348,5 @@ impl FakeBluetoothAdapter {
     pub fn get_device_id(&self) -> Result<u32, Box<Error>> {
         let (_,_,_,device_id) = try!(self.get_modalias());
         Ok(device_id)
-    }
+    }*/
 }
