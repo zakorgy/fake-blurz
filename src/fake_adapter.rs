@@ -1,17 +1,18 @@
-use fake_device::FakeBluetoothDevice;
-use fake_discovery_session::FakeBluetoothDiscoverySession;
+//use fake_device::String;
+//use fake_discovery_session::FakeBluetoothDiscoverySession;
 use std::error::Error;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use rustc_serialize::hex::FromHex;
+use core::ops::Deref;
 
 #[derive(Clone, Debug)]
 pub struct FakeBluetoothAdapter {
-    object_path: String,
-    is_present: bool,
+    object_path: Arc<Mutex<String>>,
+    is_present: Arc<Mutex<bool>>,
     is_powered: bool,
     can_start_discovery: bool,
     can_stop_discovery: bool,
-    devices: Vec<Arc<FakeBluetoothDevice>>,
+    devices: Vec<Arc<String>>,
     addatas: Vec<String>,
     address: String,
     name: String,
@@ -32,7 +33,7 @@ impl FakeBluetoothAdapter {
                is_powered: bool,
                can_start_discovery: bool,
                can_stop_discovery: bool,
-               devices: Vec<Arc<FakeBluetoothDevice>>,
+               devices: Vec<Arc<String>>,
                addatas: Vec<String>,
                address: String,
                name: String,
@@ -45,10 +46,10 @@ impl FakeBluetoothAdapter {
                is_discovering: bool,
                uuids: Vec<String>,
                modalias: String)
-               ->FakeBluetoothAdapter{
-        FakeBluetoothAdapter{
-            object_path: object_path,
-            is_present: is_present,
+               ->FakeBluetoothAdapter {
+        FakeBluetoothAdapter {
+            object_path: Arc::new(Mutex::new(object_path)),
+            is_present: Arc::new(Mutex::new(is_present)),
             is_powered: is_powered,
             can_start_discovery: can_start_discovery,
             can_stop_discovery: can_stop_discovery,
@@ -70,8 +71,8 @@ impl FakeBluetoothAdapter {
 
     pub fn new_empty() -> FakeBluetoothAdapter {
         FakeBluetoothAdapter {
-            object_path: String::new(),
-            is_present: false,
+            object_path: Arc::new(Mutex::new(String::new())),
+            is_present: Arc::new(Mutex::new(false)),
             is_powered: false,
             can_start_discovery: false,
             can_stop_discovery: false,
@@ -92,19 +93,35 @@ impl FakeBluetoothAdapter {
     }
 
     pub fn get_id(&self) -> String {
-        self.object_path.clone()
+        let cloned = self.object_path.clone();
+        let id = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => String::new(),
+        };
+        id
     }
 
     pub fn set_id(&mut self, value: String) {
-        self.object_path = value;
+        let cloned = self.object_path.clone();
+        //TODO remove unwrap, if possible
+        let mut id = cloned.lock().unwrap();
+        *id = value;
     }
 
     pub fn is_present(&self) -> Result<bool, Box<Error>> {
-        Ok(self.is_present)
+        let cloned = self.is_present.clone();
+        let is_present = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(is_present)
     }
 
     pub fn set_present(&mut self, value: bool) -> Result<(), Box<Error>> {
-        Ok(self.is_present = value)
+        let cloned = self.is_present.clone();
+        ///TODO remove unwrap, if possible
+        let mut is_present = cloned.lock().unwrap();
+        Ok(*is_present = value)
     }
 
     pub fn is_powered(&self) -> Result<bool, Box<Error>> {
@@ -131,27 +148,27 @@ impl FakeBluetoothAdapter {
         Ok(self.can_stop_discovery = value)
     }
 
-    pub fn get_device_list(&self) -> Result<Vec<String>, Box<Error>> {
+    /*pub fn get_device_list(&self) -> Result<Vec<String>, Box<Error>> {
         let mut names = vec![];
         for device in &self.devices {
             names.push(device.get_name().unwrap());
         }
         Ok(names)
-    }
+    }*/
 
-    pub fn get_devices(&self) -> Result<Vec<Arc<FakeBluetoothDevice>>, Box<Error>> {
+    pub fn get_devices(&self) -> Result<Vec<Arc<String>>, Box<Error>> {
         Ok(self.devices.clone())
     }
 
-    pub fn set_devices(&mut self, devices: Vec<Arc<FakeBluetoothDevice>>) -> Result<(), Box<Error>> {
+    pub fn set_devices(&mut self, devices: Vec<Arc<String>>) -> Result<(), Box<Error>> {
         Ok(self.devices = devices)
     }
 
-    pub fn add_device(&mut self, device: Arc<FakeBluetoothDevice>) -> Result<(), Box<Error>> {
+    pub fn add_device(&mut self, device: Arc<String>) -> Result<(), Box<Error>> {
         Ok(self.devices.push(device))
     }
 
-    pub fn get_first_device(&self) -> Result<Arc<FakeBluetoothDevice>, Box<Error>> {
+    pub fn get_first_device(&self) -> Result<Arc<String>, Box<Error>> {
         if self.devices.is_empty() {
             return Err(Box::from("No device found."))
         }
@@ -189,9 +206,9 @@ impl FakeBluetoothAdapter {
         Ok(self.name = name)
     }
 
-    pub fn create_discovery_session(&self) -> Result<FakeBluetoothDiscoverySession, Box<Error>> {
+    /*pub fn create_discovery_session(&self) -> Result<FakeBluetoothDiscoverySession, Box<Error>> {
         FakeBluetoothDiscoverySession::create_session(Arc::new(self.clone()))
-    }
+    }*/
 
     pub fn get_alias(&self) -> Result<String, Box<Error>> {
         Ok(self.alias.clone())
