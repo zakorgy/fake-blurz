@@ -227,20 +227,36 @@ impl FakeBluetoothAdapter {
         Ok(addatas[0].clone())
     }
 
-    /*pub fn get_address(&self) -> Result<String, Box<Error>> {
-        Ok(self.address.clone())
+    pub fn get_address(&self) -> Result<String, Box<Error>> {
+        let cloned = self.address.clone();
+        let address = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(address)
     }
 
-    pub fn set_address(&mut self, address: String) -> Result<(), Box<Error>> {
-        Ok(self.address = address)
+    pub fn set_address(&mut self, value: String) -> Result<(), Box<Error>> {
+        let cloned = self.address.clone();
+        //TODO remove unwrap, if possible
+        let mut address = cloned.lock().unwrap();
+        Ok(*address = value)
     }
 
     pub fn get_name(&self) -> Result<String, Box<Error>> {
-        Ok(self.name.clone())
+        let cloned = self.name.clone();
+        let name = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(name)
     }
 
-    pub fn set_name(&mut self, name: String) -> Result<(), Box<Error>> {
-        Ok(self.name = name)
+    pub fn set_name(&mut self, value: String) -> Result<(), Box<Error>> {
+        let cloned = self.name.clone();
+        //TODO remove unwrap, if possible
+        let mut name = cloned.lock().unwrap();
+        Ok(*name = value)
     }
 
     /*pub fn create_discovery_session(&self) -> Result<FakeBluetoothDiscoverySession, Box<Error>> {
@@ -248,72 +264,140 @@ impl FakeBluetoothAdapter {
     }*/
 
     pub fn get_alias(&self) -> Result<String, Box<Error>> {
-        Ok(self.alias.clone())
+        let cloned = self.alias.clone();
+        let alias = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(alias)
     }
 
     pub fn set_alias(&mut self, value: String) -> Result<(), Box<Error>> {
-        self.alias = value;
-        Ok(())
+        let cloned = self.alias.clone();
+        //TODO remove unwrap, if possible
+        let mut alias = cloned.lock().unwrap();
+        Ok(*alias = value)
     }
 
     pub fn get_class(&self) -> Result<u32, Box<Error>> {
-        Ok(self.class)
+        let cloned = self.class.clone();
+        let class = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(class)
     }
 
     pub fn set_class(&mut self, value: u32) -> Result<(), Box<Error>> {
-        Ok(self.class = value)
+        let cloned = self.class.clone();
+        //TODO remove unwrap, if possible
+        let mut class = cloned.lock().unwrap();
+        Ok(*class = value)
     }
 
     pub fn is_discoverable(&self) -> Result<bool, Box<Error>> {
-        Ok(self.is_discoverable)
+        let cloned = self.is_discoverable.clone();
+        let is_discoverable = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(is_discoverable)
     }
 
     pub fn set_discoverable(&mut self, value: bool) -> Result<(), Box<Error>> {
-        Ok(self.is_discoverable = value)
+        let cloned = self.is_discoverable.clone();
+        //TODO remove unwrap, if possible
+        let mut is_discoverable = cloned.lock().unwrap();
+        Ok(*is_discoverable = value)
     }
 
     pub fn is_pairable(&self) -> Result<bool, Box<Error>> {
-        Ok(self.is_pairable)
+        let cloned = self.is_pairable.clone();
+        let is_pairable = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(is_pairable)
     }
 
     pub fn set_pairable(&mut self, value: bool) -> Result<(), Box<Error>> {
-        Ok(self.is_pairable = value)
+        let cloned = self.is_pairable.clone();
+        //TODO remove unwrap, if possible
+        let mut is_pairable = cloned.lock().unwrap();
+        Ok(*is_pairable = value)
     }
 
     pub fn get_pairable_timeout(&self) -> Result<u32, Box<Error>> {
-        Ok(self.pairable_timeout)
+        let cloned = self.pairable_timeout.clone();
+        let pairable_timeout = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(pairable_timeout)
     }
 
     pub fn set_pairable_timeout(&mut self, value: u32) -> Result<(), Box<Error>> {
-        Ok(self.pairable_timeout = value)
+        let cloned = self.pairable_timeout.clone();
+        //TODO remove unwrap, if possible
+        let mut pairable_timeout = cloned.lock().unwrap();
+        Ok(*pairable_timeout = value)
     }
 
     pub fn get_discoverable_timeout(&self) -> Result<u32, Box<Error>> {
-        Ok(self.discoverable_timeout)
+        let cloned = self.discoverable_timeout.clone();
+        let discoverable_timeout = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(discoverable_timeout)
     }
 
     pub fn set_discoverable_timeout(&mut self, value: u32) -> Result<(), Box<Error>> {
-        Ok(self.discoverable_timeout = value)
+        let cloned = self.discoverable_timeout.clone();
+        //TODO remove unwrap, if possible
+        let mut discoverable_timeout = cloned.lock().unwrap();
+        Ok(*discoverable_timeout = value)
     }
 
     pub fn is_discovering(&self) -> Result<bool, Box<Error>> {
-        Ok(self.is_discovering)
+        let cloned = self.is_discovering.clone();
+        let is_discovering = match cloned.lock() {
+            Ok(guard) => *guard.deref(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(is_discovering)
     }
 
     pub fn set_discovering(&mut self, value: bool) -> Result<(), Box<Error>> {
-        Ok(self.is_discovering = value)
+        let cloned = self.is_discovering.clone();
+        //TODO remove unwrap, if possible
+        let mut is_discovering = cloned.lock().unwrap();
+        Ok(*is_discovering = value)
     }
 
     pub fn get_uuids(&self) -> Result<Vec<String>, Box<Error>> {
-        Ok(self.uuids.clone())
+        let cloned = self.uuids.clone();
+        let uuids = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(uuids)
     }
 
     pub fn set_uuids(&mut self, value: Vec<String>) -> Result<(), Box<Error>> {
-        Ok(self.uuids = value)
+        let cloned = self.uuids.clone();
+        //TODO remove unwrap, if possible
+        let mut uuids = cloned.lock().unwrap();
+        Ok(*uuids = value)
     }
 
     pub fn get_modalias(&self) ->  Result<(String, u32, u32, u32), Box<Error>> {
-        let ids: Vec<&str> = self.modalias.split(":").collect();
+        let cloned = self.modalias.clone();
+        let modalias = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        let ids: Vec<&str> = modalias.split(":").collect();
 
         let source = String::from(ids[0]);
         let vendor = ids[1][1..5].from_hex().unwrap();
@@ -327,7 +411,10 @@ impl FakeBluetoothAdapter {
     }
 
     pub fn set_modalias(&mut self, value: String) -> Result<(), Box<Error>> {
-        Ok(self.modalias = value)
+        let cloned = self.modalias.clone();
+        //TODO remove unwrap, if possible
+        let mut modalias = cloned.lock().unwrap();
+        Ok(*modalias = value)
     }
 
     pub fn get_vendor_id_source(&self) -> Result<String, Box<Error>> {
@@ -348,5 +435,5 @@ impl FakeBluetoothAdapter {
     pub fn get_device_id(&self) -> Result<u32, Box<Error>> {
         let (_,_,_,device_id) = try!(self.get_modalias());
         Ok(device_id)
-    }*/
+    }
 }
