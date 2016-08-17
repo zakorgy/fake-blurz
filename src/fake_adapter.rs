@@ -1,5 +1,5 @@
 //use fake_device::String;
-//use fake_discovery_session::FakeBluetoothDiscoverySession;
+use fake_discovery_session::FakeBluetoothDiscoverySession;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
 use rustc_serialize::hex::FromHex;
@@ -259,9 +259,9 @@ impl FakeBluetoothAdapter {
         Ok(*name = value)
     }
 
-    /*pub fn create_discovery_session(&self) -> Result<FakeBluetoothDiscoverySession, Box<Error>> {
+    pub fn create_discovery_session(&self) -> Result<FakeBluetoothDiscoverySession, Box<Error>> {
         FakeBluetoothDiscoverySession::create_session(Arc::new(self.clone()))
-    }*/
+    }
 
     pub fn get_alias(&self) -> Result<String, Box<Error>> {
         let cloned = self.alias.clone();
