@@ -1,9 +1,9 @@
-//use fake_device::String;
+use core::ops::Deref;
+use fake_device::FakeBluetoothDevice;
 use fake_discovery_session::FakeBluetoothDiscoverySession;
+use rustc_serialize::hex::FromHex;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
-use rustc_serialize::hex::FromHex;
-use core::ops::Deref;
 
 #[derive(Clone, Debug)]
 pub struct FakeBluetoothAdapter {
@@ -12,7 +12,7 @@ pub struct FakeBluetoothAdapter {
     is_powered: Arc<Mutex<bool>>,
     can_start_discovery: Arc<Mutex<bool>>,
     can_stop_discovery: Arc<Mutex<bool>>,
-    devices: Arc<Mutex<Vec<String>>>,
+    devices: Arc<Mutex<Vec<Arc<FakeBluetoothDevice>>>>,
     addatas: Arc<Mutex<Vec<String>>>,
     address: Arc<Mutex<String>>,
     name: Arc<Mutex<String>>,
@@ -33,7 +33,7 @@ impl FakeBluetoothAdapter {
                is_powered: bool,
                can_start_discovery: bool,
                can_stop_discovery: bool,
-               devices: Vec<String>,
+               devices: Vec<Arc<FakeBluetoothDevice>>,
                addatas: Vec<String>,
                address: String,
                name: String,
@@ -46,7 +46,7 @@ impl FakeBluetoothAdapter {
                is_discovering: bool,
                uuids: Vec<String>,
                modalias: String)
-               ->FakeBluetoothAdapter {
+               -> FakeBluetoothAdapter {
         FakeBluetoothAdapter {
             object_path: Arc::new(Mutex::new(object_path)),
             is_present: Arc::new(Mutex::new(is_present)),
@@ -101,7 +101,7 @@ impl FakeBluetoothAdapter {
         id
     }
 
-    pub fn set_id(&mut self, value: String) {
+    pub fn set_id(&self, value: String) {
         let cloned = self.object_path.clone();
         //TODO remove unwrap, if possible
         let mut id = cloned.lock().unwrap();
@@ -117,7 +117,7 @@ impl FakeBluetoothAdapter {
         Ok(is_present)
     }
 
-    pub fn set_present(&mut self, value: bool) -> Result<(), Box<Error>> {
+    pub fn set_present(&self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.is_present.clone();
         //TODO remove unwrap, if possible
         let mut is_present = cloned.lock().unwrap();
@@ -133,7 +133,7 @@ impl FakeBluetoothAdapter {
         Ok(is_powered)
     }
 
-    pub fn set_powered(&mut self, value: bool) -> Result<(), Box<Error>> {
+    pub fn set_powered(&self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.is_powered.clone();
         //TODO remove unwrap, if possible
         let mut is_powered = cloned.lock().unwrap();
@@ -149,7 +149,7 @@ impl FakeBluetoothAdapter {
         Ok(can_start_discovery)
     }
 
-    pub fn set_can_start_discovery(&mut self, value: bool) -> Result<(), Box<Error>> {
+    pub fn set_can_start_discovery(&self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.can_start_discovery.clone();
         //TODO remove unwrap, if possible
         let mut can_start_discovery = cloned.lock().unwrap();
@@ -165,39 +165,54 @@ impl FakeBluetoothAdapter {
         Ok(can_stop_discovery)
     }
 
-    pub fn set_can_stop_discovery(&mut self, value: bool) -> Result<(), Box<Error>> {
+    pub fn set_can_stop_discovery(&self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.can_stop_discovery.clone();
         //TODO remove unwrap, if possible
         let mut can_stop_discovery = cloned.lock().unwrap();
         Ok(*can_stop_discovery = value)
     }
 
-    /*pub fn get_device_list(&self) -> Result<Vec<String>, Box<Error>> {
+
+    pub fn get_devices(&self) -> Result<Vec<Arc<FakeBluetoothDevice>>, Box<Error>> {
+        let cloned = self.devices.clone();
+        let devices = match cloned.lock() {
+            Ok(guard) => guard.deref().clone(),
+            Err(_) => return Err(Box::from("Could not get the value.")),
+        };
+        Ok(devices)
+    }
+
+    pub fn get_device_list(&self) -> Result<Vec<String>, Box<Error>> {
+        let devices = try!(self.get_devices());
         let mut names = vec![];
-        for device in &self.devices {
-            names.push(device.get_name().unwrap());
+        for device in &devices {
+            let name = try!(device.get_name());
+            names.push(name);
         }
         Ok(names)
     }
 
-    pub fn get_devices(&self) -> Result<Vec<String>, Box<Error>> {
-        Ok(self.devices.clone())
+    pub fn set_devices(&self, value: Vec<Arc<FakeBluetoothDevice>>) -> Result<(), Box<Error>> {
+        let cloned = self.devices.clone();
+        //TODO remove unwrap, if possible
+        let mut devices = cloned.lock().unwrap();
+        Ok(*devices = value)
     }
 
-    pub fn set_devices(&mut self, devices: Vec<Arc<String>>) -> Result<(), Box<Error>> {
-        Ok(self.devices = devices)
-    }
-
-    pub fn add_device(&mut self, device: Arc<String>) -> Result<(), Box<Error>> {
-        Ok(self.devices.push(device))
-    }
-
-    pub fn get_first_device(&self) -> Result<Arc<String>, Box<Error>> {
-        if self.devices.is_empty() {
+    pub fn get_first_device(&self) -> Result<Arc<FakeBluetoothDevice>, Box<Error>> {
+        let devices = try!(self.get_devices());
+        if devices.is_empty() {
             return Err(Box::from("No device found."))
         }
-        Ok(self.devices[0].clone())
-    }*/
+        Ok(devices[0].clone())
+    }
+
+    pub fn add_device(&self, device: Arc<FakeBluetoothDevice>) -> Result<(), Box<Error>> {
+        let cloned = self.devices.clone();
+        //TODO remove unwrap, if possible
+        let mut devices = cloned.lock().unwrap();
+        Ok(devices.push(device))
+    }
 
     pub fn get_addatas(&self) -> Result<Vec<String>, Box<Error>> {
         let cloned = self.addatas.clone();
@@ -208,7 +223,7 @@ impl FakeBluetoothAdapter {
         Ok(addatas)
     }
 
-    pub fn set_addatas(&mut self, value: Vec<String>) -> Result<(), Box<Error>> {
+    pub fn set_addatas(&self, value: Vec<String>) -> Result<(), Box<Error>> {
         let cloned = self.addatas.clone();
         //TODO remove unwrap, if possible
         let mut addatas = cloned.lock().unwrap();
@@ -236,7 +251,7 @@ impl FakeBluetoothAdapter {
         Ok(address)
     }
 
-    pub fn set_address(&mut self, value: String) -> Result<(), Box<Error>> {
+    pub fn set_address(&self, value: String) -> Result<(), Box<Error>> {
         let cloned = self.address.clone();
         //TODO remove unwrap, if possible
         let mut address = cloned.lock().unwrap();
@@ -252,7 +267,7 @@ impl FakeBluetoothAdapter {
         Ok(name)
     }
 
-    pub fn set_name(&mut self, value: String) -> Result<(), Box<Error>> {
+    pub fn set_name(&self, value: String) -> Result<(), Box<Error>> {
         let cloned = self.name.clone();
         //TODO remove unwrap, if possible
         let mut name = cloned.lock().unwrap();
@@ -272,7 +287,7 @@ impl FakeBluetoothAdapter {
         Ok(alias)
     }
 
-    pub fn set_alias(&mut self, value: String) -> Result<(), Box<Error>> {
+    pub fn set_alias(&self, value: String) -> Result<(), Box<Error>> {
         let cloned = self.alias.clone();
         //TODO remove unwrap, if possible
         let mut alias = cloned.lock().unwrap();
@@ -288,7 +303,7 @@ impl FakeBluetoothAdapter {
         Ok(class)
     }
 
-    pub fn set_class(&mut self, value: u32) -> Result<(), Box<Error>> {
+    pub fn set_class(&self, value: u32) -> Result<(), Box<Error>> {
         let cloned = self.class.clone();
         //TODO remove unwrap, if possible
         let mut class = cloned.lock().unwrap();
@@ -304,7 +319,7 @@ impl FakeBluetoothAdapter {
         Ok(is_discoverable)
     }
 
-    pub fn set_discoverable(&mut self, value: bool) -> Result<(), Box<Error>> {
+    pub fn set_discoverable(&self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.is_discoverable.clone();
         //TODO remove unwrap, if possible
         let mut is_discoverable = cloned.lock().unwrap();
@@ -320,7 +335,7 @@ impl FakeBluetoothAdapter {
         Ok(is_pairable)
     }
 
-    pub fn set_pairable(&mut self, value: bool) -> Result<(), Box<Error>> {
+    pub fn set_pairable(&self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.is_pairable.clone();
         //TODO remove unwrap, if possible
         let mut is_pairable = cloned.lock().unwrap();
@@ -336,7 +351,7 @@ impl FakeBluetoothAdapter {
         Ok(pairable_timeout)
     }
 
-    pub fn set_pairable_timeout(&mut self, value: u32) -> Result<(), Box<Error>> {
+    pub fn set_pairable_timeout(&self, value: u32) -> Result<(), Box<Error>> {
         let cloned = self.pairable_timeout.clone();
         //TODO remove unwrap, if possible
         let mut pairable_timeout = cloned.lock().unwrap();
@@ -352,7 +367,7 @@ impl FakeBluetoothAdapter {
         Ok(discoverable_timeout)
     }
 
-    pub fn set_discoverable_timeout(&mut self, value: u32) -> Result<(), Box<Error>> {
+    pub fn set_discoverable_timeout(&self, value: u32) -> Result<(), Box<Error>> {
         let cloned = self.discoverable_timeout.clone();
         //TODO remove unwrap, if possible
         let mut discoverable_timeout = cloned.lock().unwrap();
@@ -368,7 +383,7 @@ impl FakeBluetoothAdapter {
         Ok(is_discovering)
     }
 
-    pub fn set_discovering(&mut self, value: bool) -> Result<(), Box<Error>> {
+    pub fn set_discovering(&self, value: bool) -> Result<(), Box<Error>> {
         let cloned = self.is_discovering.clone();
         //TODO remove unwrap, if possible
         let mut is_discovering = cloned.lock().unwrap();
@@ -384,7 +399,7 @@ impl FakeBluetoothAdapter {
         Ok(uuids)
     }
 
-    pub fn set_uuids(&mut self, value: Vec<String>) -> Result<(), Box<Error>> {
+    pub fn set_uuids(&self, value: Vec<String>) -> Result<(), Box<Error>> {
         let cloned = self.uuids.clone();
         //TODO remove unwrap, if possible
         let mut uuids = cloned.lock().unwrap();
@@ -410,7 +425,7 @@ impl FakeBluetoothAdapter {
         (device[0] as u32) * 16 * 16 + (device[1] as u32)))
     }
 
-    pub fn set_modalias(&mut self, value: String) -> Result<(), Box<Error>> {
+    pub fn set_modalias(&self, value: String) -> Result<(), Box<Error>> {
         let cloned = self.modalias.clone();
         //TODO remove unwrap, if possible
         let mut modalias = cloned.lock().unwrap();
