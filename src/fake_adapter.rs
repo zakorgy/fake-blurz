@@ -182,6 +182,17 @@ impl FakeBluetoothAdapter {
         Ok(devices)
     }
 
+    pub fn get_device(&self, name: String) -> Result<Arc<FakeBluetoothDevice>, Box<Error>> {
+        let devices = try!(self.get_devices());
+        for device in devices {
+            let device_name = try!(device.get_name());
+            if device_name == name {
+                return Ok(device);
+            }
+        }
+        Err(Box::from("No device exists with the given name."))
+    }
+
     pub fn get_device_list(&self) -> Result<Vec<String>, Box<Error>> {
         let devices = try!(self.get_devices());
         let mut names = vec![];

@@ -78,6 +78,9 @@ impl FakeBluetoothDevice {
     pub fn new(adapter: Arc<FakeBluetoothAdapter>,
                name: String)
                -> Arc<FakeBluetoothDevice> {
+        if let Ok(existing_device) = adapter.get_device(name.clone()) {
+            return existing_device;
+        }
         let device = Arc::new(FakeBluetoothDevice{
             object_path: Arc::new(Mutex::new(String::new())),
             adapter: adapter.clone(),
