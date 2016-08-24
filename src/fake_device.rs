@@ -76,13 +76,13 @@ impl FakeBluetoothDevice {
     }*/
 
     pub fn new(adapter: Arc<FakeBluetoothAdapter>,
-               name: String)
+               id: String)
                -> Arc<FakeBluetoothDevice> {
-        if let Ok(existing_device) = adapter.get_device(name.clone()) {
+        if let Ok(existing_device) = adapter.get_device(id.clone()) {
             return existing_device;
         }
         let device = Arc::new(FakeBluetoothDevice{
-            id: Arc::new(Mutex::new(String::new())),
+            id: Arc::new(Mutex::new(id)),
             adapter: adapter.clone(),
             address: Arc::new(Mutex::new(String::new())),
             appearance: Arc::new(Mutex::new(0)),
@@ -95,7 +95,7 @@ impl FakeBluetoothDevice {
             is_blocked: Arc::new(Mutex::new(false)),
             is_legacy_pairing: Arc::new(Mutex::new(false)),
             uuids: Arc::new(Mutex::new(vec![])),
-            name: Arc::new(Mutex::new(name)),
+            name: Arc::new(Mutex::new(String::new())),
             icon: Arc::new(Mutex::new(String::new())),
             alias: Arc::new(Mutex::new(String::new())),
             product_version: Arc::new(Mutex::new(0)),

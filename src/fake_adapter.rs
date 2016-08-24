@@ -182,11 +182,11 @@ impl FakeBluetoothAdapter {
         Ok(devices)
     }
 
-    pub fn get_device(&self, name: String) -> Result<Arc<FakeBluetoothDevice>, Box<Error>> {
+    pub fn get_device(&self, id: String) -> Result<Arc<FakeBluetoothDevice>, Box<Error>> {
         let devices = try!(self.get_devices());
         for device in devices {
-            let device_name = try!(device.get_name());
-            if device_name == name {
+            let device_id = device.get_id();
+            if device_id == id {
                 return Ok(device);
             }
         }
