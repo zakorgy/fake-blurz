@@ -183,13 +183,17 @@ impl FakeBluetoothAdapter {
     }
 
     pub fn get_device(&self, id: String) -> Result<Arc<FakeBluetoothDevice>, Box<Error>> {
+        println!("The id we search :{:?}", id);
         let devices = try!(self.get_devices());
         for device in devices {
             let device_id = device.get_id();
+                println!("{:?}", device_id);
             if device_id == id {
+                println!("Device id found");
                 return Ok(device);
             }
         }
+        println!("Device id not found");
         Err(Box::from("No device exists with the given name."))
     }
 
