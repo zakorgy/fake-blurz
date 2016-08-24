@@ -199,12 +199,12 @@ impl FakeBluetoothAdapter {
 
     pub fn get_device_list(&self) -> Result<Vec<String>, Box<Error>> {
         let devices = try!(self.get_devices());
-        let mut names = vec![];
+        let mut ids = vec!();
         for device in &devices {
-            let name = try!(device.get_name());
-            names.push(name);
+            let id = device.get_id();
+            ids.push(id);
         }
-        Ok(names)
+        Ok(ids)
     }
 
     pub fn set_devices(&self, value: Vec<Arc<FakeBluetoothDevice>>) -> Result<(), Box<Error>> {
