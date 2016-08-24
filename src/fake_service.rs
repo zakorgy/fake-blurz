@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Debug)]
 pub struct FakeBluetoothGATTService {
-    object_path: Arc<Mutex<String>>,
+    id: Arc<Mutex<String>>,
     device: Arc<FakeBluetoothDevice>,
     gatt_characteristics: Arc<Mutex<Vec<Arc<FakeBluetoothGATTCharacteristic>>>>,
     is_primary: Arc<Mutex<bool>>,
@@ -15,7 +15,7 @@ pub struct FakeBluetoothGATTService {
 }
 
 impl FakeBluetoothGATTService {
-    /*pub fn new(object_path: String,
+    /*pub fn new(id: String,
                device: FakeBluetoothDevice,
                gatt_characteristics: Vec<Arc<FakeBluetoothGATTCharacteristic>>,
                is_primary: bool,
@@ -23,7 +23,7 @@ impl FakeBluetoothGATTService {
                uuid: String)
                -> FakeBluetoothGATTService {
         FakeBluetoothGATTService {
-            object_path: Arc::new(Mutex::new(object_path)),
+            id: Arc::new(Mutex::new(id)),
             device: Arc::new(device),
             gatt_characteristics: Arc::new(Mutex::new(gatt_characteristics)),
             is_primary: Arc::new(Mutex::new(is_primary)),
@@ -32,11 +32,11 @@ impl FakeBluetoothGATTService {
         }
     }*/
 
-    pub fn new(object_path: String,
+    pub fn new(id: String,
                device: Arc<FakeBluetoothDevice>)
                -> Arc<FakeBluetoothGATTService> {
         let service = Arc::new(FakeBluetoothGATTService {
-            object_path: Arc::new(Mutex::new(object_path)),
+            id: Arc::new(Mutex::new(id)),
             device: device.clone(),
             gatt_characteristics: Arc::new(Mutex::new(vec![])),
             is_primary: Arc::new(Mutex::new(false)),
@@ -49,7 +49,7 @@ impl FakeBluetoothGATTService {
 
     pub fn new_empty() -> FakeBluetoothGATTService {
         FakeBluetoothGATTService {
-            object_path: Arc::new(Mutex::new(String::new())),
+            id: Arc::new(Mutex::new(String::new())),
             device: Arc::new(FakeBluetoothDevice::new_empty()),
             gatt_characteristics: Arc::new(Mutex::new(vec![])),
             is_primary: Arc::new(Mutex::new(false)),
@@ -59,7 +59,7 @@ impl FakeBluetoothGATTService {
     }
 
     pub fn get_id(&self) -> String {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         let id = match cloned.lock() {
             Ok(guard) => guard.deref().clone(),
             Err(_) => String::new(),
@@ -68,7 +68,7 @@ impl FakeBluetoothGATTService {
     }
 
     pub fn set_id(&self, value: String) {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         //TODO remove unwrap, if possible
         let mut id = cloned.lock().unwrap();
         *id = value;

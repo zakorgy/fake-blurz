@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Debug)]
 pub struct FakeBluetoothGATTDescriptor {
-    object_path: Arc<Mutex<String>>,
+    id: Arc<Mutex<String>>,
     uuid: Arc<Mutex<String>>,
     characteristic: Arc<FakeBluetoothGATTCharacteristic>,
     value: Arc<Mutex<Vec<u8>>>,
@@ -13,14 +13,14 @@ pub struct FakeBluetoothGATTDescriptor {
 }
 
 impl FakeBluetoothGATTDescriptor {
-    /*pub fn new(object_path: String,
+    /*pub fn new(id: String,
                uuid: String,
                characteristic: FakeBluetoothGATTCharacteristic,
                value: Vec<u8>,
                flags: Vec<String>)
                -> FakeBluetoothGATTDescriptor {
         FakeBluetoothGATTDescriptor {
-            object_path: Arc::new(Mutex::new(object_path)),
+            id: Arc::new(Mutex::new(id)),
             uuid: Arc::new(Mutex::new(uuid)),
             characteristic: Arc::new(Mutex::new(characteristic)),
             value: Arc::new(Mutex::new(value)),
@@ -28,11 +28,11 @@ impl FakeBluetoothGATTDescriptor {
         }
     }*/
 
-    pub fn new(object_path: String,
+    pub fn new(id: String,
                characteristic: Arc<FakeBluetoothGATTCharacteristic>)
                -> Arc<FakeBluetoothGATTDescriptor> {
         let descriptor = Arc::new(FakeBluetoothGATTDescriptor {
-            object_path: Arc::new(Mutex::new(object_path)),
+            id: Arc::new(Mutex::new(id)),
             uuid: Arc::new(Mutex::new(String::new())),
             characteristic: characteristic.clone(),
             value: Arc::new(Mutex::new(vec![])),
@@ -44,7 +44,7 @@ impl FakeBluetoothGATTDescriptor {
 
     pub fn new_empty() -> FakeBluetoothGATTDescriptor {
         FakeBluetoothGATTDescriptor {
-            object_path: Arc::new(Mutex::new(String::new())),
+            id: Arc::new(Mutex::new(String::new())),
             uuid: Arc::new(Mutex::new(String::new())),
             characteristic: Arc::new(FakeBluetoothGATTCharacteristic::new_empty()),
             value: Arc::new(Mutex::new(vec![])),
@@ -53,7 +53,7 @@ impl FakeBluetoothGATTDescriptor {
     }
 
     pub fn get_id(&self) -> String {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         let id = match cloned.lock() {
             Ok(guard) => guard.deref().clone(),
             Err(_) => String::new(),
@@ -62,7 +62,7 @@ impl FakeBluetoothGATTDescriptor {
     }
 
     pub fn set_id(&self, value: String) {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         //TODO remove unwrap, if possible
         let mut id = cloned.lock().unwrap();
         *id = value;

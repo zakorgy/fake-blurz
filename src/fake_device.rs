@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Debug)]
 pub struct FakeBluetoothDevice {
-    object_path: Arc<Mutex<String>>,
+    id: Arc<Mutex<String>>,
     adapter: Arc<FakeBluetoothAdapter>,
     address: Arc<Mutex<String>>,
     appearance: Arc<Mutex<u16>>,
@@ -30,7 +30,7 @@ pub struct FakeBluetoothDevice {
 }
 
 impl FakeBluetoothDevice {
-    /*pub fn new_initialized(object_path: String,
+    /*pub fn new_initialized(id: String,
                adapter: Arc<FakeBluetoothAdapter>,
                address: String,
                appearance: u16,
@@ -52,7 +52,7 @@ impl FakeBluetoothDevice {
                modalias: String)
                -> FakeBluetoothDevice {
         FakeBluetoothDevice{
-            object_path: Arc::new(Mutex::new(object_path)),
+            id: Arc::new(Mutex::new(id)),
             adapter: Arc::new(Mutex::new(adapter)),
             address: Arc::new(Mutex::new(address)),
             appearance: Arc::new(Mutex::new(appearance)),
@@ -82,7 +82,7 @@ impl FakeBluetoothDevice {
             return existing_device;
         }
         let device = Arc::new(FakeBluetoothDevice{
-            object_path: Arc::new(Mutex::new(String::new())),
+            id: Arc::new(Mutex::new(String::new())),
             adapter: adapter.clone(),
             address: Arc::new(Mutex::new(String::new())),
             appearance: Arc::new(Mutex::new(0)),
@@ -109,7 +109,7 @@ impl FakeBluetoothDevice {
 
     pub fn new_empty() -> FakeBluetoothDevice {
         FakeBluetoothDevice{
-            object_path: Arc::new(Mutex::new(String::new())),
+            id: Arc::new(Mutex::new(String::new())),
             adapter: Arc::new(FakeBluetoothAdapter::new_empty()),
             address: Arc::new(Mutex::new(String::new())),
             appearance: Arc::new(Mutex::new(0)),
@@ -133,7 +133,7 @@ impl FakeBluetoothDevice {
     }
 
     pub fn get_id(&self) -> String {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         let id = match cloned.lock() {
             Ok(guard) => guard.deref().clone(),
             Err(_) => String::new(),
@@ -142,7 +142,7 @@ impl FakeBluetoothDevice {
     }
 
     pub fn set_id(&self, value: String) {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         //TODO remove unwrap, if possible
         let mut id = cloned.lock().unwrap();
         *id = value;

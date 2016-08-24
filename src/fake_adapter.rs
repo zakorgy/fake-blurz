@@ -7,13 +7,13 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Debug)]
 pub struct FakeBluetoothAdapter {
-    object_path: Arc<Mutex<String>>,
+    id: Arc<Mutex<String>>,
     is_present: Arc<Mutex<bool>>,
     is_powered: Arc<Mutex<bool>>,
     can_start_discovery: Arc<Mutex<bool>>,
     can_stop_discovery: Arc<Mutex<bool>>,
     devices: Arc<Mutex<Vec<Arc<FakeBluetoothDevice>>>>,
-    addatas: Arc<Mutex<Vec<String>>>,
+    ad_datas: Arc<Mutex<Vec<String>>>,
     address: Arc<Mutex<String>>,
     name: Arc<Mutex<String>>,
     alias: Arc<Mutex<String>>,
@@ -28,13 +28,13 @@ pub struct FakeBluetoothAdapter {
 }
 
 impl FakeBluetoothAdapter {
-    pub fn new(object_path: String,
+    pub fn new(id: String,
                is_present: bool,
                is_powered: bool,
                can_start_discovery: bool,
                can_stop_discovery: bool,
                devices: Vec<Arc<FakeBluetoothDevice>>,
-               addatas: Vec<String>,
+               ad_datas: Vec<String>,
                address: String,
                name: String,
                alias: String,
@@ -48,13 +48,13 @@ impl FakeBluetoothAdapter {
                modalias: String)
                -> FakeBluetoothAdapter {
         FakeBluetoothAdapter {
-            object_path: Arc::new(Mutex::new(object_path)),
+            id: Arc::new(Mutex::new(id)),
             is_present: Arc::new(Mutex::new(is_present)),
             is_powered: Arc::new(Mutex::new(is_powered)),
             can_start_discovery: Arc::new(Mutex::new(can_start_discovery)),
             can_stop_discovery: Arc::new(Mutex::new(can_stop_discovery)),
             devices: Arc::new(Mutex::new(devices)),
-            addatas: Arc::new(Mutex::new(addatas)),
+            ad_datas: Arc::new(Mutex::new(ad_datas)),
             address: Arc::new(Mutex::new(address)),
             name: Arc::new(Mutex::new(name)),
             alias: Arc::new(Mutex::new(alias)),
@@ -70,30 +70,30 @@ impl FakeBluetoothAdapter {
     }
 
     pub fn new_empty() -> FakeBluetoothAdapter {
-        FakeBluetoothAdapter {
-            object_path: Arc::new(Mutex::new(String::new())),
-            is_present: Arc::new(Mutex::new(false)),
-            is_powered: Arc::new(Mutex::new(false)),
-            can_start_discovery: Arc::new(Mutex::new(false)),
-            can_stop_discovery: Arc::new(Mutex::new(false)),
-            devices: Arc::new(Mutex::new(vec![])),
-            addatas: Arc::new(Mutex::new(vec![])),
-            address: Arc::new(Mutex::new(String::new())),
-            name: Arc::new(Mutex::new(String::new())),
-            alias: Arc::new(Mutex::new(String::new())),
-            class: Arc::new(Mutex::new(0)),
-            is_discoverable: Arc::new(Mutex::new(false)),
-            is_pairable: Arc::new(Mutex::new(false)),
-            pairable_timeout: Arc::new(Mutex::new(0)),
-            discoverable_timeout: Arc::new(Mutex::new(0)),
-            is_discovering: Arc::new(Mutex::new(false)),
-            uuids: Arc::new(Mutex::new(vec![])),
-            modalias: Arc::new(Mutex::new(String::new())),
-        }
+        FakeBluetoothAdapter::new(
+            /*id*/ String::new(),
+            /*is_present*/ true,
+            /*is_powered*/ false,
+            /*can_start_discovery*/ false,
+            /*can_stop_discovery*/ false,
+            /*devices*/ vec![],
+            /*ad_datas*/ vec![],
+            /*address*/ String::new(),
+            /*name*/ String::new(),
+            /*alias*/ String::new(),
+            /*class*/ 0,
+            /*is_discoverable*/ false,
+            /*is_pairable*/ false,
+            /*pairable_timeout*/ 0,
+            /*discoverable_timeout*/ 0,
+            /*is_discovering*/ false,
+            /*uuids*/ vec![],
+            /*modalias*/ String::new(),
+        )
     }
 
     pub fn get_id(&self) -> String {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         let id = match cloned.lock() {
             Ok(guard) => guard.deref().clone(),
             Err(_) => String::new(),
@@ -102,7 +102,7 @@ impl FakeBluetoothAdapter {
     }
 
     pub fn set_id(&self, value: String) {
-        let cloned = self.object_path.clone();
+        let cloned = self.id.clone();
         //TODO remove unwrap, if possible
         let mut id = cloned.lock().unwrap();
         *id = value;
@@ -225,32 +225,32 @@ impl FakeBluetoothAdapter {
         Ok(devices.push(device))
     }
 
-    pub fn get_addatas(&self) -> Result<Vec<String>, Box<Error>> {
-        let cloned = self.addatas.clone();
-        let addatas = match cloned.lock() {
+    pub fn get_ad_datas(&self) -> Result<Vec<String>, Box<Error>> {
+        let cloned = self.ad_datas.clone();
+        let ad_datas = match cloned.lock() {
             Ok(guard) => guard.deref().clone(),
             Err(_) => return Err(Box::from("Could not get the value.")),
         };
-        Ok(addatas)
+        Ok(ad_datas)
     }
 
-    pub fn set_addatas(&self, value: Vec<String>) -> Result<(), Box<Error>> {
-        let cloned = self.addatas.clone();
+    pub fn set_ad_datas(&self, value: Vec<String>) -> Result<(), Box<Error>> {
+        let cloned = self.ad_datas.clone();
         //TODO remove unwrap, if possible
-        let mut addatas = cloned.lock().unwrap();
-        Ok(*addatas = value)
+        let mut ad_datas = cloned.lock().unwrap();
+        Ok(*ad_datas = value)
     }
 
-    pub fn get_first_addata(&self) -> Result<String, Box<Error>> {
-        let cloned = self.addatas.clone();
-        let addatas = match cloned.lock() {
+    pub fn get_first_ad_data(&self) -> Result<String, Box<Error>> {
+        let cloned = self.ad_datas.clone();
+        let ad_datas = match cloned.lock() {
             Ok(guard) => guard.deref().clone(),
             Err(_) => return Err(Box::from("Could not get the value.")),
         };
-        if addatas.is_empty() {
-            return Err(Box::from("No addata found."))
+        if ad_datas.is_empty() {
+            return Err(Box::from("No ad_data found."))
         }
-        Ok(addatas[0].clone())
+        Ok(ad_datas[0].clone())
     }
 
     pub fn get_address(&self) -> Result<String, Box<Error>> {
